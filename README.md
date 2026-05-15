@@ -5,15 +5,9 @@ Repositori ini berisi materi belajar dan tugas kuliah **Komputasi Paralel** (Sem
 ## 📁 Struktur Direktori
 
 - `belajar_dasar_C/`: Berisi dasar-dasar pemrograman C sebagai persiapan.
-  - `1_struktur-dasar.c`: Struktur dasar program C.
-  - `2_input.c`: Input/Output di C.
-  - `4_array.c`: Penggunaan array 1D dan 2D (matrix).
-  - `5_pointer.c`: Dasar-dasar pointer.
-  - `6_malloc.c`: Alokasi memori dinamis.
-  - `7_openmp.c`: Pengenalan dasar OpenMP.
+
 - `tugas_mandiri/`: Berisi tugas-tugas mandiri terkait komputasi paralel.
-  - `c_dasar.c`: Latihan array dinamis dan pointer.
-  - `openmp_dasar.c`: Latihan dasar OpenMP dengan logika thread genap/ganjil.
+
 
 ## 🛠️ Persyaratan (Requirements)
 
