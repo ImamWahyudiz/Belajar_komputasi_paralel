@@ -1,0 +1,12 @@
+# Binaries
+*.exe
+*.o
+*.out
+4_array
+c_dasar
+openmp_dasar
+7_openmp
+
+# IDE
+.vscode/
+.gemini/
