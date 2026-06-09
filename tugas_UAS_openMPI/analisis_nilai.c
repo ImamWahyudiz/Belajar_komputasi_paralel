@@ -14,6 +14,10 @@ int main(int argc, char **argv) {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
+  char processor_name[MPI_MAX_PROCESSOR_NAME];
+  int name_len;
+  MPI_Get_processor_name(processor_name, &name_len);
+
   if (size != 6) {
     if (rank == 0) {
       printf("ERROR: Program ini membutuhkan tepat 6 proses (1 Master + 5 "
@@ -113,8 +117,12 @@ int main(int argc, char **argv) {
   int gathered_counts[6];
   float gathered_maxs[6];
   float gathered_mins[6];
+  char gathered_names[6][MPI_MAX_PROCESSOR_NAME];
 
   // Root mengumpulkan metrik dari semua rank
+  MPI_Gather(processor_name, MPI_MAX_PROCESSOR_NAME, MPI_CHAR,
+             gathered_names, MPI_MAX_PROCESSOR_NAME, MPI_CHAR, 0,
+             MPI_COMM_WORLD);
   MPI_Gather(&local_count, 1, MPI_INT, gathered_counts, 1, MPI_INT, 0,
              MPI_COMM_WORLD);
   MPI_Gather(&local_max, 1, MPI_FLOAT, gathered_maxs, 1, MPI_FLOAT, 0,
@@ -128,27 +136,51 @@ int main(int argc, char **argv) {
   if (rank == 0) {
     float global_avg = global_sum / total_data;
 
-    printf("===========================================\n");
-    printf("HASIL ANALISIS NILAI MAHASISWA (MPI)\n");
-    printf("===========================================\n");
-    printf("Total Data Diproses : %d baris\n", total_data);
-    printf("Nilai Tertinggi     : %.2f\n", global_max);
-    printf("Nilai Terendah      : %.2f\n", global_min);
-    printf("Rata-rata Kelas     : %.2f\n", global_avg);
-    printf("===========================================\n");
-    printf("DETAIL PEKERJAAN NODE:\n");
+    printf("\n");
+    printf("=================================================================================\n");
+    printf("                     HASIL ANALISIS NILAI MAHASISWA (MPI)                        \n");
+    printf("=================================================================================\n");
+    printf(" Total Data Diproses : %d baris\n", total_data);
+    printf(" Nilai Tertinggi     : %.2f\n", global_max);
+    printf(" Nilai Terendah      : %.2f\n", global_min);
+    printf(" Rata-rata Kelas     : %.2f\n", global_avg);
+    printf("=================================================================================\n");
+    printf("\n");
+    
+    // Cetak Tabel
+    printf("+------+----------+----------------------+-----------+---------+---------+\n");
+    printf("| Rank | Role     | Hostname             | Jml Data  | Max Loc | Min Loc |\n");
+    printf("+------+----------+----------------------+-----------+---------+---------+\n");
+    
     for (int i = 0; i < size; i++) {
+      char role[20];
       if (i == 0) {
-        printf("- Master (Rank 0) memproses %d data (Max lokal: %.2f, Min "
-               "lokal: %.2f)\n",
-               gathered_counts[i], gathered_maxs[i], gathered_mins[i]);
+        strcpy(role, "Master");
       } else {
-        printf("- Worker %d (Rank %d) memproses %d data (Max lokal: %.2f, Min "
-               "lokal: %.2f)\n",
-               i, i, gathered_counts[i], gathered_maxs[i], gathered_mins[i]);
+        sprintf(role, "Worker %d", i);
       }
+      printf("| %-4d | %-8s | %-20.20s | %-9d | %-7.2f | %-7.2f |\n", 
+             i, role, gathered_names[i], gathered_counts[i], gathered_maxs[i], gathered_mins[i]);
     }
-    printf("===========================================\n");
+    printf("+------+----------+----------------------+-----------+---------+---------+\n");
+    
+    // Penjabaran Flow
+    printf("\n");
+    printf("ALUR PENGERJAAN MPI (WORKFLOW):\n");
+    printf("1. [Master]   %s (Rank 0) membaca file data_nilai.csv berisi %d baris data.\n", gathered_names[0], total_data);
+    printf("2. [Master]   Memecah dan mendistribusikan potongan data menggunakan MPI_Scatterv ke %d node.\n", size);
+    
+    printf("3. [Workers]  ");
+    for(int i=1; i<size; i++) {
+        printf("%s", gathered_names[i]);
+        if(i < size-1) printf(", ");
+    }
+    printf(" menerima potongan datanya.\n");
+    
+    printf("4. [Semua]    Melakukan komputasi pencarian nilai Max, Min, dan Sum secara PARALEL di masing-masing mesin.\n");
+    printf("5. [Master]   Mengumpulkan hasil perhitungan parsial dari semua Worker menggunakan MPI_Reduce dan MPI_Gather.\n");
+    printf("6. [Master]   Menghitung rata-rata kelas dan menyatukan laporan menjadi tabel di atas.\n");
+    printf("=================================================================================\n\n");
   }
 
   // Membersihkan memori lokal
