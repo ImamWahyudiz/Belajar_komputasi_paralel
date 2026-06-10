@@ -1,0 +1,6 @@
+100.97.21.76 slots=2  # IP Laptop Master: Imam
+100.116.214.85 slots=8  # IP Worker: Maul
+100.85.227.48 slots=8  # IP Worker: Nepi
+100.70.234.121 slots=10  # IP Worker 3: Azdi oke
+100.121.102.75 slots=8  # IP Worker 4: Dimas
+100.127.223.99 slots=12  # IP Worker 5: Najib

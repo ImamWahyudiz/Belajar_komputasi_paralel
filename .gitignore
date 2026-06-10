@@ -13,8 +13,7 @@ openmp_dasar
 
 # Sensitive and local config
 # MPI hosts files
-tugas_UAS_openMPI/hosts.txt
-hosts.txt
+
 
 # Environment files
 .env
